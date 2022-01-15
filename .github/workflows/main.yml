@@ -40,6 +40,6 @@ jobs:
         uses: alexanderdamiani/pylinter@v1.4.0
         with:
           python-root: "."
-          flake8_flags: ""
+          flake8-flags: ""
           mypy-flags: ""
           fail-on-isort: true
