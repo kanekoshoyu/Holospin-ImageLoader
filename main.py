@@ -4,6 +4,7 @@ import db
 import logging
 import sys
 import colorlog
+from typing import List
 
 
 def printCursor(cursor):
@@ -53,6 +54,40 @@ def initSerial(port: str):
         return None
 
 
+class PixArrayConfig:
+    resolution: int = 8  # bits
+    length: int = 16
+    angle: int = 72
+
+
+class Pixel:
+    red = 255
+    green = 255
+    blue = 255
+
+    def shift(self, bits: int):
+        self.red >> bits
+        self.green >> bits
+        self.blue >> bits
+
+
+def generatePixArray(config: PixArrayConfig, image) -> List[List[Pixel]]:
+    arr = [[Pixel()]*config.length]*config.angle
+    # fill in the array with data
+    Pixel
+    bitshift = 8 - config.resolution  # number of bits to be shifted
+    return arr
+
+
+def txPixArray(serial, pixarray: List[List[Pixel]]):
+    for index, angle in enumerate(pixarray):
+        # angle element
+        logging.info("Sending "+str(index))
+        serial.write(index)
+        # TODO: Define parser within Pixel class
+        # serial.write(angle)
+
+
 def main():
     initLog()
     # logger.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -73,20 +108,24 @@ def main():
 
     # Function 2
     # Input ,image
-    # Output pixarray
-    print("F2")
-    
-    pixarray:int[] = []
+    # Output pixarrayf
+    logging.info("F2")
+    image = "Something"
+    config = PixArrayConfig()
+    pixarr = generatePixArray(config, image)
+
     # Function 3
     # Input pixarray
     # Output uart signal
-    print("F3")
+    logging.info("F3")
     serial = initSerial("/dev/ttyUSB0")
     logging.info("Serial status: " + str(serial.isOpen()))
-    
+
     logging.info("Sending...")
     serial.write("hello\n".encode())
-    time.sleep(1)
+
+    txPixArray(serial, pixarr)
+    logging.info("Done")
 
 
 if __name__ == "__main__":
