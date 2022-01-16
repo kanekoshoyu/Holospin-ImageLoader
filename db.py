@@ -12,16 +12,11 @@ def get_collection(db_type: DataBaseType):
     # db_address = '127.0.0.1'
     # db_address = '192.168.50.100'
     # db_address = 'ttcshenzhen.asuscomm.com'
-    db_port = 27027 # Sho's ITX
-    # db_port = 27017  # TTC SZ NUC
-
-    try:
-        conn = MongoClient(db_address, db_port)
-        logging.info("Connected to MongoDB")
-    except:
-        logging.info("Could not connect to MongoDB")
-
-    # database
+    db_port = 27017
+    
+    conn = MongoClient(db_address, db_port)
+    logging.info("Start MongoDB connection")
+    #   
     db = conn.database
     # Pattern Matching only in Python 3.10
     if db_type == DataBaseType.Order:

@@ -36,6 +36,23 @@ def initLog():
     return logger
 
 
+def initSerial(port: str):
+    logging.info("setting up serial")
+    try:
+        ser = serial.Serial(
+            port=port,
+            baudrate=115200,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            bytesize=serial.EIGHTBITS,
+            timeout=2  # seconds     # <-- HERE
+        )
+        return ser
+    except Exception as e:
+        logging.error("No UART found")
+        return None
+
+
 def main():
     initLog()
     # logger.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -58,29 +75,17 @@ def main():
     # Input ,image
     # Output pixarray
     print("F2")
+    
+    pixarray:int[] = []
     # Function 3
     # Input pixarray
     # Output uart signal
     print("F3")
-    try:
-        print("Helloworld")
-        ser = serial.Serial(
-            port="/dev/ttyUSB0",
-            baudrate=9600,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            bytesize=serial.EIGHTBITS,
-            timeout=2  # seconds     # <-- HERE
-        )
-    except Exception as e:
-        logging.error("No UART found")
-        return
-
-    logging.info("Serial status: " + str(ser.isOpen()))
-    db.list_collection(db.DataBaseType.Order)
-
+    serial = initSerial("/dev/ttyUSB0")
+    logging.info("Serial status: " + str(serial.isOpen()))
+    
     logging.info("Sending...")
-    ser.write("hello\n".encode())
+    serial.write("hello\n".encode())
     time.sleep(1)
 
 
