@@ -80,12 +80,23 @@ def generatePixArray(config: PixArrayConfig, image) -> List[List[Pixel]]:
 
 
 def txPixArray(serial, pixarray: List[List[Pixel]]):
+    set_validation = False
     for index, angle in enumerate(pixarray):
         # angle element
         logging.info("Sending "+str(index))
         serial.write(index)
         # TODO: Define parser within Pixel class
         # serial.write(angle)
+
+        if not set_validation:
+            continue
+        len = 0
+        while len == 0:
+            try:
+                rxline = serial.readline()
+                len = len(rxline)
+            except:
+                logging.error("No reply from MCU")
 
 
 def main():
