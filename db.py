@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from enum import Enum
-import io
+import logging
 
 
 class DataBaseType(Enum):
@@ -8,18 +8,18 @@ class DataBaseType(Enum):
 
 
 def get_collection(db_type: DataBaseType):
-    # db_address = 'localhost'
+    db_address = 'localhost'
     # db_address = '127.0.0.1'
     # db_address = '192.168.50.100'
-    db_address = 'ttcshenzhen.asuscomm.com'
-    # db_port = 27027 # Sho's ITX
-    db_port = 27017  # TTC SZ NUC
+    # db_address = 'ttcshenzhen.asuscomm.com'
+    db_port = 27027 # Sho's ITX
+    # db_port = 27017  # TTC SZ NUC
 
     try:
         conn = MongoClient(db_address, db_port)
-        print("Connected to MongoDB")
+        logging.info("Connected to MongoDB")
     except:
-        print("Could not connect to MongoDB")
+        logging.info("Could not connect to MongoDB")
 
     # database
     db = conn.database
@@ -32,9 +32,12 @@ def get_collection(db_type: DataBaseType):
 
 def list_collection(db_type: DataBaseType):
     cursor = get_collection(db_type).find()
-    for record in cursor:
-        print(record, "\r\n")
-
+    try:
+        for record in cursor:
+            logging.info(record, "\r\n")
+    except Exception as e:
+        logging.error("connection error")
+        logging.error(e)
 
 def make_pcba_entry(pix_array):
     r = {
