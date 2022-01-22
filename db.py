@@ -13,11 +13,8 @@ def get_collection(db_type: DataBaseType):
     # db_address = '192.168.50.100'
     # db_address = 'ttcshenzhen.asuscomm.com'
     db_port = 27017
-    
-    conn = MongoClient(db_address, db_port)
-    logging.info("Start MongoDB connection")
-    #   
-    db = conn.database
+
+    db = MongoClient(db_address, db_port).database
     # Pattern Matching only in Python 3.10
     if db_type == DataBaseType.Order:
         return db.holo_spinner_order_sandbox_1
@@ -33,6 +30,7 @@ def list_collection(db_type: DataBaseType):
     except Exception as e:
         logging.error("connection error")
         logging.error(e)
+
 
 def make_pcba_entry(pix_array):
     r = {

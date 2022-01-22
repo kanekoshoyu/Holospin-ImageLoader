@@ -4,7 +4,7 @@ import db
 import logging
 import sys
 import colorlog
-from typing import List
+from imagedata import Pixel, WarpImage
 
 
 def printCursor(cursor):
@@ -14,10 +14,10 @@ def printCursor(cursor):
 
 def downloadImage(order_id: int):
     col = db.get_collection(db.DataBaseType.Order)
-    logging.debug(col)
+    # logging.debug(col)
     myquery = {"order_id": order_id}
     cursor = col.find(myquery)
-    printCursor(cursor)
+    # printCursor(cursor)
     result = 0
     return result
 
@@ -35,23 +35,6 @@ def initLog():
     logger.addHandler(fh)
     logger.addHandler(sh)
     return logger
-
-
-class PixArrayConfig:
-    resolution: int = 8  # bits
-    length: int = 16
-    angle: int = 72
-
-
-class Pixel(object):
-    red: int = 255
-    green: int = 255
-    blue: int = 255
-
-    def shift(self, bits: int):
-        self.red >> bits
-        self.green >> bits
-        self.blue >> bits
 
 
 class PixelProgrammer(serial.Serial):
@@ -74,30 +57,22 @@ class PixelProgrammer(serial.Serial):
         self.write(pixel.green)
         self.write(pixel.blue)
 
-    def send_pixarray(self, pixarray: List[List[Pixel]]):
+    def send_warpimage(self, warpimage: WarpImage):
         set_validation = False
-        for index, angle in enumerate(pixarray):
-            # angle element
-            logging.info("Sending "+str(index))
-            self.write(index)
-            self.send_pixel(angle)
-            if not set_validation:
-                continue
-            len = 0
+
+        sec = warpimage.count_section()
+        rad = warpimage.count_radius()
+        print('Section'+str(sec))
+        print('Radius'+str(rad))
+        for s in sec:
+            self.write(s)
+            for r in rad:
+                pix = warpimage.data[s][r]
+                self.send_pixel(pix)
+            self.write('\r\n')
             while len == 0:
-                try:
-                    rxline = serial.readline()
-                    len = len(rxline)
-                except:
-                    logging.error("No reply from MCU")
-
-
-def generatePixArray(config: PixArrayConfig, image) -> List[List[Pixel]]:
-    arr = [[Pixel()]*config.length]*config.angle
-    # fill in the array with data
-    Pixel
-    bitshift = 8 - config.resolution  # number of bits to be shifted
-    return arr
+                rxline = serial.readline()
+                len = len(rxline)
 
 
 def main():
@@ -111,9 +86,8 @@ def main():
 
     db.list_collection(db.DataBaseType.Order)
     try:
-        order_id = 0
-        image = downloadImage(order_id)
-        print(image)
+        image = downloadImage(order_id=0)
+        # print(image)
     except Exception as e:
         logging.error("Function 1 error", e)
         return
@@ -122,22 +96,20 @@ def main():
     # Input ,image
     # Output pixarrayf
     logging.info("F2")
-    image = "Something"
-    config = PixArrayConfig()
-    pixarr = generatePixArray(config, image)
+    warpimage = WarpImage()
 
-    # Function 3
+    # Function 3 OK
     # Input pixarray
     # Output uart signal
     logging.info("F3")
     pp = PixelProgrammer('/dev/ttyUSB0')
     if not pp.is_open:
-        logging.error("Oh no")
+        logging.error("Serial port not open, quitting")
         return
 
     logging.info("Sending...")
     pp.write("hello\n".encode())
-    pp.send_pixarray(pixarray)
+    pp.send_warpimage(warpimage)
     logging.info("Done")
 
 
