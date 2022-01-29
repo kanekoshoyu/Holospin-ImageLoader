@@ -1,40 +1,17 @@
-import serial
-import time
-import db
+from haps_shared.structure import SpinnerProfile
+import haps_shared.database as db
+import inspect
+import os
 import logging
-import sys
-import colorlog
-from imagedata import Pixel, WarpImage
+import time
+import serial
+import cv2
+import haps_shared.tool as tool
 
 
 def printCursor(cursor):
     for record in cursor:
         logging.info(record, "\r\n")
-
-
-def downloadImage(order_id: int):
-    col = db.get_collection(db.DataBaseType.Order)
-    # logging.debug(col)
-    myquery = {"order_id": order_id}
-    cursor = col.find(myquery)
-    # printCursor(cursor)
-    result = 0
-    return result
-
-
-def initLog():
-    logger = logging.getLogger('')
-    logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler('my_log_info.log')
-    sh = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter(
-        '[%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s', datefmt='%a, %d %b %Y %H:%M:%S')
-    fh.setFormatter(formatter)
-    sh.setFormatter(colorlog.ColoredFormatter(
-        '%(log_color)s [%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s', datefmt='%a, %d %b %Y %H:%M:%S'))
-    logger.addHandler(fh)
-    logger.addHandler(sh)
-    return logger
 
 
 class PixelProgrammer(serial.Serial):
@@ -52,31 +29,9 @@ class PixelProgrammer(serial.Serial):
             logging.warning("No UART found")
             return None
 
-    def send_pixel(self, pixel: Pixel):
-        self.write(pixel.red)
-        self.write(pixel.green)
-        self.write(pixel.blue)
-
-    def send_warpimage(self, warpimage: WarpImage):
-        set_validation = False
-
-        sec = warpimage.count_section()
-        rad = warpimage.count_radius()
-        print('Section'+str(sec))
-        print('Radius'+str(rad))
-        for s in sec:
-            self.write(s)
-            for r in rad:
-                pix = warpimage.data[s][r]
-                self.send_pixel(pix)
-            self.write('\r\n')
-            while len == 0:
-                rxline = serial.readline()
-                len = len(rxline)
-
 
 def main():
-    initLog()
+    tool.init_log()
     # logger.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     logging.info("HAPS #2")
     # Function 1
@@ -84,34 +39,23 @@ def main():
     # Output image
     logging.info("F1")
 
-    db.list_collection(db.DataBaseType.Order)
+    # db.list_collection(db.DataBaseType.Order)
     try:
-        image = downloadImage(order_id=0)
+        crop = db.download_image(order_id='61f4b5083fdf222d1cb3ce25')
         # print(image)
+        tool.show(crop, wait_time=1000, label='downloaded crop')
     except Exception as e:
         logging.error("Function 1 error", e)
         return
-
-    # Function 2
-    # Input ,image
-    # Output pixarrayf
+    profile = SpinnerProfile()
     logging.info("F2")
-    warpimage = WarpImage()
-
-    # Function 3 OK
-    # Input pixarray
-    # Output uart signal
+    strip = tool.deround(crop, profile)
+    tool.show(strip, wait_time=1000)
     logging.info("F3")
-    pp = PixelProgrammer('/dev/ttyUSB0')
-    if not pp.is_open:
-        logging.error("Serial port not open, quitting")
-        return
-
-    logging.info("Sending...")
-    pp.write("hello\n".encode())
-    pp.send_warpimage(warpimage)
-    logging.info("Done")
+    final = tool.hold(tool.reround(strip, profile))
+    logging.info("F4")
 
 
 if __name__ == "__main__":
+
     main()

@@ -1,3 +1,5 @@
 #pip install -r requirements.txt
 pyserial
 pymongo
+git+https://github.com/kanekoshoyu/haps_shared.git
+# git+https://github.com/NeuralNine/vidstream.git
