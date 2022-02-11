@@ -83,6 +83,7 @@ def main():
     # send every 2 lines
     line_per_message = 2
     msg = []
+    counter=0
     for sec in strip:
         for pixel in sec:
             # RGB
@@ -91,8 +92,13 @@ def main():
             msg.append(pixel[2])
 
         if len(msg) >= line_per_message * profile.led_count * 3:
-            print(msg)
+            counter+=1
+            logging.info("Transfering %d of %d", counter, profile.angle_count/line_per_message)
+            # print(msg)
             uart.write(msg)
+            val = uart.read(size=1)
+            if len(val)<1:
+                logging.error('no reply')
             msg.clear()
             time.sleep(0.01)
 
