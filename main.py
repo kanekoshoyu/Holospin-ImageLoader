@@ -66,7 +66,9 @@ def main():
 
     # db.list_collection(db.DataBaseType.Order)
     try:
-        crop = db.download_image(order_id='61f4b5083fdf222d1cb3ce25')
+        #TTC
+        # crop = db.download_image(order_id='61f4b5083fdf222d1cb3ce25')
+        crop = db.download_image(order_id='620a2ba26a74fd1cdb7872fc')
         # print(image)
         # tool.show(crop, wait_time=1000, label='downloaded crop')
     except Exception as e:
@@ -75,7 +77,7 @@ def main():
     profile = SpinnerProfile()
     logging.info("F2")
     strip = tool.deround(crop, profile)
-    # tool.show(strip, wait_time=1000)
+    tool.show(strip, wait_time=1000)
     logging.info("F3")
     # final = tool.hold(tool.reround(strip, profile))
     # logging.info("F4")
@@ -84,6 +86,8 @@ def main():
     line_per_message = 2
     msg = []
     counter=0
+
+
     for sec in strip:
         for pixel in sec:
             # RGB
@@ -96,9 +100,11 @@ def main():
             logging.info("Transfering %d of %d", counter, profile.angle_count/line_per_message)
             # print(msg)
             uart.write(msg)
-            val = uart.read(size=1)
-            if len(val)<1:
+            val = uart.read(size=4)
+            if len(val)<4:
                 logging.error('no reply')
+            else:
+                print(val)
             msg.clear()
             time.sleep(0.01)
 
