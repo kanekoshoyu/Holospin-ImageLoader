@@ -62,13 +62,16 @@ def main():
     logging.info("F1")
     logging.info("UARTs")
     print(serial_ports())
-    uart = PixelProgrammer(serial_ports()[0])
-
+    try:
+        uart = PixelProgrammer(serial_ports()[0])
+    except:
+        logging.error("UART dongle not found")
+        return
     # db.list_collection(db.DataBaseType.Order)
     try:
         #TTC
-        # crop = db.download_image(order_id='61f4b5083fdf222d1cb3ce25')
-        crop = db.download_image(order_id='620a2ba26a74fd1cdb7872fc')
+        crop = db.download_image(order_id='61f4b5083fdf222d1cb3ce25')
+        # crop = db.download_image(order_id='620a2ba26a74fd1cdb7872fc')
         # print(image)
         # tool.show(crop, wait_time=1000, label='downloaded crop')
     except Exception as e:
